@@ -55,6 +55,19 @@
         #comparison-modal {
             transition: opacity 0.2s ease-in-out;
         }
+        /* Rainbow Glow animation */
+        @keyframes rainbow-glow {
+            0%   { border-color: #ff5e57; box-shadow: 0 0 10px #ff5e57; }
+            16%  { border-color: #ff9966; box-shadow: 0 0 12px #ff9966; }
+            33%  { border-color: #ffff66; box-shadow: 0 0 14px #ffff66; }
+            50%  { border-color: #66b3ff; box-shadow: 0 0 16px #66b3ff; }
+            66%  { border-color: #cc66ff; box-shadow: 0 0 18px #cc66ff; }
+            83%  { border-color: #ff5e57; box-shadow: 0 0 20px #ff5e57; }
+            100% { border-color: #81c995; box-shadow: 0 0 25px 5px #81c995; }
+        }
+        .animate-rainbow-glow {
+            animation: rainbow-glow 2.5s ease-in-out forwards;
+        }
     </style>
 </head>
 <body class="bg-dark-bg text-dark-text-primary flex items-center justify-center min-h-screen p-4">
@@ -188,7 +201,7 @@
                 </div>
                 <div class="flex flex-col items-center">
                     <h3 class="text-xl font-semibold text-dark-text-muted mb-4">リサイズ後</h3>
-                    <div class="bg-dark-bg p-4 rounded-lg w-full h-full flex items-center justify-center">
+                    <div id="modal-resized-container" class="bg-dark-bg p-4 rounded-lg w-full h-full flex items-center justify-center border-2 border-transparent">
                         <img id="modal-resized-image" src="#" class="max-w-full h-auto max-h-[50vh] object-contain">
                     </div>
                     <div id="modal-resized-info" class="mt-2 text-sm text-dark-success font-semibold"></div>
@@ -238,6 +251,7 @@
         const modalResizedImage = document.getElementById('modal-resized-image');
         const modalOriginalInfo = document.getElementById('modal-original-info');
         const modalResizedInfo = document.getElementById('modal-resized-info');
+        const modalResizedContainer = document.getElementById('modal-resized-container');
 
         // --- State variables ---
         let filesToProcess = [];
@@ -505,12 +519,15 @@
             });
 
             comparisonModal.classList.remove('hidden');
+            
+            modalResizedContainer.classList.add('animate-rainbow-glow');
         }
 
         function hideModal() {
             if (modalResizedImage.src.startsWith('blob:')) {
                 URL.revokeObjectURL(modalResizedImage.src);
             }
+            modalResizedContainer.classList.remove('animate-rainbow-glow');
             comparisonModal.classList.add('hidden');
         }
 
