@@ -3,72 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image compression and resizing tools</title>
-    <!-- Tailwind CSS for styling -->
+    <title>Image Compression and Resizing</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#202124',
+                        'dark-card': '#303134',
+                        'dark-text-primary': '#e8eaed',
+                        'dark-text-secondary': '#9aa0a6',
+                        'dark-text-muted': '#bdc1c6',
+                        'dark-border': '#5f6368',
+                        'dark-accent': '#8ab4f8',
+                        'dark-accent-hover': '#a2c6f9',
+                        'dark-success': '#81c995',
+                        'dark-hover': '#3c4043',
+                        'dark-button-disabled': '#5f6368',
+                        'dark-button-text-disabled': '#9aa0a6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Cropper.js for cropping -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <!-- JSZip for batch download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Style for the file input */
-        input[type="file"] {
-            display: none;
-        }
-        /* Custom styles for drag-over effect */
-        .drag-over {
-            background-color: #e0f2fe; /* Light blue background */
-            border-color: #0284c7; /* Sky blue border */
-        }
-        /* Hide number input spinners */
+        input[type="file"] { display: none; }
+        .drag-over { background-color: #3c4043; border-color: #8ab4f8; }
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+            -webkit-appearance: none; margin: 0;
         }
-        input[type=number] {
-            -moz-appearance: textfield;
+        input[type=number] { -moz-appearance: textfield; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 20px; height: 20px;
+            background: #8ab4f8; border-radius: 50%; cursor: pointer; margin-top: -6px;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px; height: 20px; background: #8ab4f8; border-radius: 50%; cursor: pointer;
+        }
+        /* Cropper.js overrides */
+        .cropper-view-box, .cropper-face {
+            border-radius: .5rem;
+        }
+        .cropper-container {
+            border-radius: .5rem;
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 flex items-center justify-center min-h-screen p-4">
+<body class="bg-dark-bg text-dark-text-primary flex items-center justify-center min-h-screen p-4">
 
-    <div class="w-full max-w-4xl mx-auto">
+    <div class="w-full max-w-5xl mx-auto">
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Image Compression and Resizing Tools</h1>
-            <p class="text-slate-500 mt-2">すべての処理はブラウザ内で完結します。画像がサーバーにアップロードされることはありません。</p>
+            <h1 class="text-3xl md:text-4xl font-bold text-dark-text-primary">Image Compression and Resizing</h1>
+            <p class="text-dark-text-secondary mt-2">すべての処理はブラウザ内で完結します。画像がサーバーにアップロードされることはありません。</p>
         </header>
 
-        <main class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+        <main class="bg-dark-card p-6 sm:p-8 rounded-2xl shadow-lg">
             <!-- Upload Area -->
             <div id="upload-area">
-                <label for="file-input" id="drop-zone" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
-                    <svg class="w-12 h-12 text-slate-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <label for="file-input" id="drop-zone" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-dark-border rounded-xl cursor-pointer hover:bg-dark-hover transition-colors">
+                    <svg class="w-12 h-12 text-dark-text-secondary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                     </svg>
-                    <p class="text-lg font-medium text-slate-600">ここに画像をドラッグ＆ドロップ</p>
-                    <p class="text-slate-500">またはクリックしてファイルを選択</p>
+                    <p class="text-lg font-medium text-dark-text-muted">画像のリサイズとファイル圧縮</p>
+                    <p class="text-dark-text-secondary mt-2">ここに画像をドラッグ＆ドロップして開始</p>
+                    <p class="text-sm text-dark-text-secondary mt-1">またはクリックしてファイルを選択</p>
                 </label>
-                <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif,image/webp">
+                <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
             </div>
 
             <!-- Editor/Preview Area (Initially Hidden) -->
             <div id="editor-area" class="hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Left: Preview -->
-                    <div class="flex flex-col items-center justify-center bg-slate-50 p-4 rounded-xl">
-                        <img id="preview-image" src="#" alt="Image preview" class="max-w-full max-h-80 object-contain rounded-lg shadow-md">
-                        <div id="original-info" class="text-center mt-4 text-sm text-slate-500"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left: Preview & File List -->
+                    <div class="flex flex-col">
+                        <div id="cropper-container" class="flex flex-col items-center justify-center bg-dark-bg p-4 rounded-xl min-h-[350px]">
+                            <img id="preview-image" src="#" alt="Image preview" class="max-w-full max-h-80 object-contain block">
+                        </div>
+                         <div id="file-list-container" class="mt-4 hidden">
+                            <h3 class="font-bold text-dark-text-muted mb-2">ファイル一覧 (<span id="file-count">0</span>)</h3>
+                            <ul id="file-list" class="text-sm text-dark-text-secondary max-h-24 overflow-y-auto bg-dark-bg p-3 rounded-lg"></ul>
+                        </div>
+                        <div id="original-info" class="text-center mt-4 text-sm text-dark-text-secondary"></div>
                     </div>
 
                     <!-- Right: Settings -->
                     <div>
-                        <h2 class="text-xl font-bold mb-4 text-slate-800">設定</h2>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-dark-text-primary">設定</h2>
+                            <button id="reset-button" class="text-sm bg-dark-border text-dark-text-primary py-1 px-3 rounded-lg hover:bg-[#7c8186] transition">リセット</button>
+                        </div>
+                        
+                        <!-- Cropper message -->
+                        <div id="crop-info" class="text-xs text-center p-2 rounded-md bg-dark-hover text-dark-text-muted mb-4 hidden">
+                            切り抜きは最初の画像にのみ適用されます。
+                        </div>
                         
                         <!-- Aspect Ratio -->
                         <div class="mb-4">
-                            <label for="aspect-ratio" class="block text-sm font-medium text-slate-600 mb-1">アスペクト比</label>
-                            <select id="aspect-ratio" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <label for="aspect-ratio" class="block text-sm font-medium text-dark-text-muted mb-1">アスペクト比</label>
+                            <select id="aspect-ratio" class="w-full p-2 bg-dark-hover border border-dark-border text-dark-text-primary rounded-lg focus:ring-2 focus:ring-dark-accent focus:border-dark-accent transition">
                                 <option value="original">元の比率を維持</option>
                                 <option value="free">自由変形</option>
                                 <option value="1:1">1:1 (正方形)</option>
@@ -80,19 +127,19 @@
                         <!-- Dimensions -->
                         <div class="flex items-center gap-4 mb-4">
                             <div class="w-1/2">
-                                <label for="width-input" class="block text-sm font-medium text-slate-600 mb-1">幅 (px)</label>
-                                <input type="number" id="width-input" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" min="1">
+                                <label for="width-input" class="block text-sm font-medium text-dark-text-muted mb-1">幅 (px)</label>
+                                <input type="number" id="width-input" class="w-full p-2 bg-dark-hover border border-dark-border text-dark-text-primary rounded-lg" min="1">
                             </div>
                             <div class="w-1/2">
-                                <label for="height-input" class="block text-sm font-medium text-slate-600 mb-1">高さ (px)</label>
-                                <input type="number" id="height-input" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" min="1">
+                                <label for="height-input" class="block text-sm font-medium text-dark-text-muted mb-1">高さ (px)</label>
+                                <input type="number" id="height-input" class="w-full p-2 bg-dark-hover border border-dark-border text-dark-text-primary rounded-lg" min="1">
                             </div>
                         </div>
 
                         <!-- Output Format -->
                         <div class="mb-4">
-                            <label for="format-select" class="block text-sm font-medium text-slate-600 mb-1">出力形式</label>
-                            <select id="format-select" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <label for="format-select" class="block text-sm font-medium text-dark-text-muted mb-1">出力形式</label>
+                            <select id="format-select" class="w-full p-2 bg-dark-hover border border-dark-border text-dark-text-primary rounded-lg">
                                 <option value="image/webp">WebP</option>
                                 <option value="image/jpeg">JPEG</option>
                                 <option value="image/png">PNG</option>
@@ -100,36 +147,52 @@
                         </div>
 
                         <!-- Quality Slider -->
-                        <div id="quality-section" class="mb-6">
+                        <div id="quality-section" class="mb-2">
                             <div class="flex justify-between items-center mb-1">
-                                <label for="quality-slider" class="block text-sm font-medium text-slate-600">品質</label>
-                                <span id="quality-value" class="text-sm font-semibold text-blue-600">80%</span>
+                                <label for="quality-slider" class="block text-sm font-medium text-dark-text-muted">品質</label>
+                                <span id="quality-value" class="text-sm font-semibold text-dark-accent">80%</span>
                             </div>
-                            <input type="range" id="quality-slider" min="1" max="100" value="80" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                            <input type="range" id="quality-slider" min="1" max="100" value="80" class="w-full h-2 bg-slate-500 rounded-lg appearance-none cursor-pointer">
+                        </div>
+
+                        <!-- Estimated Size Section -->
+                        <div id="estimation-section" class="my-4 p-3 bg-dark-bg rounded-lg text-center hidden">
+                             <p class="text-sm text-dark-text-secondary">
+                                予想ファイルサイズ: 
+                                <span id="estimated-size" class="font-bold text-dark-success">...</span> 
+                                (<span id="compression-percentage" class="font-bold text-dark-success">...</span> 削減)
+                            </p>
                         </div>
                         
                         <!-- Action Button -->
-                        <button id="process-button" disabled class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center">
-                             <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <button id="process-button" disabled class="w-full bg-dark-accent text-dark-bg font-bold py-3 px-4 rounded-lg hover:bg-dark-accent-hover transition-all disabled:bg-dark-button-disabled disabled:text-dark-button-text-disabled disabled:cursor-not-allowed flex items-center justify-center">
+                             <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                               </svg>
-                            <span id="button-text">リサイズ & 圧縮</span>
+                            <span id="button-text">リサイズして別タブで開く</span>
                         </button>
                     </div>
                 </div>
             </div>
              <!-- Error Message -->
-            <div id="error-message" class="hidden mt-4 text-center text-red-600 bg-red-100 p-3 rounded-lg"></div>
+            <div id="error-message" class="hidden mt-4 text-center text-red-400 bg-red-900/50 p-3 rounded-lg"></div>
         </main>
+
+        <footer class="text-center mt-8 py-4">
+            <p id="copyright-notice" class="text-sm text-dark-text-secondary"></p>
+        </footer>
+
     </div>
 
     <script>
+    document.addEventListener('DOMContentLoaded', function() {
         // --- DOM Elements ---
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
         const uploadArea = document.getElementById('upload-area');
         const editorArea = document.getElementById('editor-area');
+        const cropperContainer = document.getElementById('cropper-container');
         const previewImage = document.getElementById('preview-image');
         const originalInfo = document.getElementById('original-info');
         const aspectRatioSelect = document.getElementById('aspect-ratio');
@@ -139,231 +202,453 @@
         const qualitySection = document.getElementById('quality-section');
         const qualitySlider = document.getElementById('quality-slider');
         const qualityValue = document.getElementById('quality-value');
+        const estimationSection = document.getElementById('estimation-section');
+        const estimatedSize = document.getElementById('estimated-size');
+        const compressionPercentage = document.getElementById('compression-percentage');
         const processButton = document.getElementById('process-button');
+        const resetButton = document.getElementById('reset-button');
         const errorMessage = document.getElementById('error-message');
         const buttonText = document.getElementById('button-text');
         const loadingSpinner = document.getElementById('loading-spinner');
+        const copyrightElement = document.getElementById('copyright-notice');
+        const fileListContainer = document.getElementById('file-list-container');
+        const fileList = document.getElementById('file-list');
+        const fileCount = document.getElementById('file-count');
+        const cropInfo = document.getElementById('crop-info');
 
         // --- State variables ---
-        let originalImage = null; // Holds the Image object
-        let originalWidth = 0;
-        let originalHeight = 0;
-        let originalAspectRatio = 1;
+        let cropper = null;
+        let filesToProcess = [];
+        let originalImageDataUrl = '';
         let isProcessing = false;
+        
+        // --- Debounce function ---
+        let debounceTimer;
+        const debounce = (func, delay) => {
+            return (...args) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => func.apply(this, args), delay);
+            };
+        };
+
+        const debouncedUpdateEstimate = debounce(updateEstimate, 300);
 
         // --- Event Listeners ---
-
-        // Drag and Drop
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-        });
-
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-over');
-            const files = e.dataTransfer.files;
-            if (files.length) {
-                handleFile(files[0]);
-            }
+            if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
         });
-
-        // File Input Click
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) {
-                handleFile(e.target.files[0]);
-            }
+        fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFiles(e.target.files); });
+        widthInput.addEventListener('input', () => { 
+            handleDimensionChange('width');
+            debouncedUpdateEstimate();
         });
-        
-        // Settings Listeners
-        widthInput.addEventListener('input', () => handleDimensionChange('width'));
-        heightInput.addEventListener('input', () => handleDimensionChange('height'));
-        aspectRatioSelect.addEventListener('change', updateDimensionsBasedOnAspectRatio);
+        heightInput.addEventListener('input', () => {
+            handleDimensionChange('height');
+            debouncedUpdateEstimate();
+        });
+        aspectRatioSelect.addEventListener('change', () => {
+            if (!cropper) return;
+            const ratioStr = aspectRatioSelect.value;
+            let ratio = NaN;
+            if (ratioStr !== 'free' && ratioStr !== 'original') {
+                const [w, h] = ratioStr.split(':');
+                ratio = w / h;
+            } else if (ratioStr === 'original' && filesToProcess.length > 0) {
+                 const firstFileImage = new Image();
+                 firstFileImage.src = URL.createObjectURL(filesToProcess[0].file);
+                 firstFileImage.onload = () => {
+                    cropper.setAspectRatio(firstFileImage.width / firstFileImage.height);
+                    URL.revokeObjectURL(firstFileImage.src);
+                 }
+                 return;
+            }
+            cropper.setAspectRatio(ratio);
+        });
         formatSelect.addEventListener('change', () => {
             const isPng = formatSelect.value === 'image/png';
             qualitySection.style.display = isPng ? 'none' : 'block';
+            debouncedUpdateEstimate();
         });
         qualitySlider.addEventListener('input', (e) => {
             qualityValue.textContent = `${e.target.value}%`;
+            debouncedUpdateEstimate();
         });
-        processButton.addEventListener('click', processImage);
+        processButton.addEventListener('click', processFiles);
+        resetButton.addEventListener('click', resetApp);
+
 
         // --- Core Functions ---
 
-        /**
-         * Handles the selected file.
-         * @param {File} file The image file selected by the user.
-         */
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
+        function handleFiles(fileListInput) {
+            const validFiles = Array.from(fileListInput).filter(f => f.type.startsWith('image/'));
+            if (validFiles.length === 0) {
                 showError('画像ファイルを選択してください。');
                 return;
             }
             hideError();
 
+            filesToProcess = validFiles.map(file => ({ file, id: Math.random().toString(36).substring(2, 9) }));
+            
+            updateFileListUI();
+            
+            const firstFile = filesToProcess[0].file;
             const reader = new FileReader();
             reader.onload = (e) => {
-                originalImage = new Image();
-                originalImage.onload = () => {
-                    originalWidth = originalImage.width;
-                    originalHeight = originalImage.height;
-                    originalAspectRatio = originalWidth / originalHeight;
-
-                    // Populate UI
-                    previewImage.src = e.target.result;
-                    originalInfo.innerHTML = `元のサイズ: ${originalWidth} x ${originalHeight} px<br>ファイルサイズ: ${formatBytes(file.size)}`;
-                    widthInput.value = originalWidth;
-                    heightInput.value = originalHeight;
-
-                    // Show editor and hide upload area
-                    uploadArea.classList.add('hidden');
-                    editorArea.classList.remove('hidden');
-                    processButton.disabled = false;
-                };
-                originalImage.src = e.target.result;
+                originalImageDataUrl = e.target.result;
+                initCropper(originalImageDataUrl);
+                updateOriginalInfo(firstFile);
+                debouncedUpdateEstimate();
             };
-            reader.readAsDataURL(file);
-        }
+            reader.readAsDataURL(firstFile);
 
-        /**
-         * Handles changes in width or height inputs based on aspect ratio.
-         * @param {('width'|'height')} changedInput The input that was changed.
-         */
-        function handleDimensionChange(changedInput) {
-            const ratio = aspectRatioSelect.value;
-            if (ratio === 'free') return; // Do nothing if freeform
-
-            let newWidth = parseInt(widthInput.value, 10);
-            let newHeight = parseInt(heightInput.value, 10);
-
-            if (ratio === 'original') {
-                if (changedInput === 'width') {
-                    if (newWidth > 0) heightInput.value = Math.round(newWidth / originalAspectRatio);
-                } else {
-                    if (newHeight > 0) widthInput.value = Math.round(newHeight * originalAspectRatio);
-                }
+            uploadArea.classList.add('hidden');
+            editorArea.classList.remove('hidden');
+            processButton.disabled = false;
+            
+            const isBatch = filesToProcess.length > 1;
+            cropInfo.classList.toggle('hidden', !isBatch);
+            aspectRatioSelect.disabled = isBatch;
+            if (isBatch) {
+                aspectRatioSelect.value = 'original';
+                buttonText.textContent = "ZIPで一括ダウンロード";
             } else {
-                const [w, h] = ratio.split(':').map(Number);
-                const fixedAspectRatio = w / h;
-                 if (changedInput === 'width') {
-                    if (newWidth > 0) heightInput.value = Math.round(newWidth / fixedAspectRatio);
-                } else {
-                    if (newHeight > 0) widthInput.value = Math.round(newHeight * fixedAspectRatio);
-                }
+                buttonText.textContent = "リサイズして別タブで開く";
             }
         }
         
-        /**
-         * Updates dimensions when the aspect ratio select changes.
-         */
-        function updateDimensionsBasedOnAspectRatio() {
-            let width = parseInt(widthInput.value, 10);
-            if(width > 0) handleDimensionChange('width');
+        function initCropper(imageUrl) {
+            if (cropper) cropper.destroy();
+            previewImage.src = imageUrl;
+            cropper = new Cropper(previewImage, {
+                viewMode: 1,
+                background: false,
+                autoCropArea: 1,
+                responsive: true,
+                ready() {
+                    handleDimensionChange('width');
+                },
+                crop(event) {
+                    if (aspectRatioSelect.value === 'free') {
+                        widthInput.value = Math.round(event.detail.width);
+                        heightInput.value = Math.round(event.detail.height);
+                    }
+                }
+            });
         }
 
-        /**
-         * Main function to process the image: resize and compress.
-         */
-        function processImage() {
-            if (!originalImage || isProcessing) return;
+        function resetApp() {
+            if (cropper) cropper.destroy();
+            cropper = null;
+            filesToProcess = [];
+            originalImageDataUrl = '';
+            fileInput.value = ''; // Reset file input
+            
+            editorArea.classList.add('hidden');
+            uploadArea.classList.remove('hidden');
+            
+            previewImage.src = "#";
+            originalInfo.innerHTML = "";
+            processButton.disabled = true;
+            hideError();
+        }
 
+        function handleDimensionChange(changedInput) {
+            if (!cropper || aspectRatioSelect.value === 'free') return;
+
+            const data = cropper.getData(true);
+            let newWidth = parseInt(widthInput.value, 10);
+            let newHeight = parseInt(heightInput.value, 10);
+            
+            if (aspectRatioSelect.value !== 'original') {
+                 const [w, h] = aspectRatioSelect.value.split(':').map(Number);
+                 const fixedAspectRatio = w/h;
+                 if (changedInput === 'width') {
+                    if (newWidth > 0) heightInput.value = Math.round(newWidth / fixedAspectRatio);
+                 } else {
+                    if (newHeight > 0) widthInput.value = Math.round(newHeight * fixedAspectRatio);
+                 }
+            } else { // Original aspect ratio
+                 const originalAspectRatio = data.width / data.height;
+                 if (changedInput === 'width') {
+                    if (newWidth > 0) heightInput.value = Math.round(newWidth / originalAspectRatio);
+                 } else {
+                    if (newHeight > 0) widthInput.value = Math.round(newHeight * originalAspectRatio);
+                 }
+            }
+        }
+
+        async function processFiles() {
+            if (filesToProcess.length === 0 || isProcessing) return;
             setLoading(true);
 
-            const width = parseInt(widthInput.value, 10);
-            const height = parseInt(heightInput.value, 10);
-            const format = formatSelect.value;
-            const quality = parseInt(qualitySlider.value, 10) / 100;
+            if (filesToProcess.length > 1) {
+                await processBatchFiles();
+            } else {
+                await processSingleFileForTab();
+            }
+            
+            setLoading(false);
+        }
+        
+        function getProcessOptions() {
+            return {
+                width: parseInt(widthInput.value, 10),
+                height: parseInt(heightInput.value, 10),
+                format: formatSelect.value,
+                quality: formatSelect.value === 'image/png' ? 1.0 : parseInt(qualitySlider.value, 10) / 100,
+            };
+        }
 
-            if (!(width > 0 && height > 0)) {
+        async function processSingleFileForTab() {
+            const options = getProcessOptions();
+            if (!(options.width > 0 && options.height > 0)) {
                 showError('幅と高さを正しく入力してください。');
                 setLoading(false);
                 return;
             }
-            hideError();
+            
+            const croppedCanvas = cropper.getCroppedCanvas({
+                width: options.width,
+                height: options.height,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            });
+            
+            const resizedDataUrl = croppedCanvas.toDataURL(options.format, options.quality);
+            const fileName = createFileName(filesToProcess[0].file.name, options.format);
+            const comparisonHtml = generateComparisonPageHTML(originalImageDataUrl, resizedDataUrl, fileName);
 
-            // Use a timeout to allow the UI to update to the loading state
-            setTimeout(() => {
+            const newTab = window.open();
+            newTab.document.write(comparisonHtml);
+            newTab.document.close();
+        }
+
+        async function processBatchFiles() {
+            const options = getProcessOptions();
+            if (!(options.width > 0 && options.height > 0)) {
+                showError('幅と高さを正しく入力してください。');
+                return;
+            }
+            
+            const zip = new JSZip();
+            
+            setLoading(true, `処理中 (0 / ${filesToProcess.length})...`);
+
+            for (let i = 0; i < filesToProcess.length; i++) {
+                const file = filesToProcess[i].file;
                 try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-
-                    // Draw image on canvas
-                    ctx.drawImage(originalImage, 0, 0, width, height);
-
-                    // Get blob from canvas
-                    canvas.toBlob((blob) => {
-                        if (blob) {
-                            const url = URL.createObjectURL(blob);
-                            window.open(url, '_blank');
-                            // Clean up the URL object after a short delay
-                            setTimeout(() => URL.revokeObjectURL(url), 1000);
-                        } else {
-                            showError('画像の処理中にエラーが発生しました。');
-                        }
-                        setLoading(false);
-                    }, format, quality);
-
-                } catch (err) {
-                    console.error('Processing error:', err);
-                    showError('画像の処理中にエラーが発生しました。');
-                    setLoading(false);
+                    const blob = await resizeImage(file, options);
+                    const fileName = createFileName(file.name, options.format);
+                    zip.file(fileName, blob);
+                    setLoading(true, `処理中 (${i + 1} / ${filesToProcess.length})...`);
+                } catch (error) {
+                    console.error(`Failed to process ${file.name}:`, error);
                 }
-            }, 50); // 50ms delay
+            }
+            
+            setLoading(true, 'ZIPファイルを生成中...');
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            triggerDownload(zipBlob, "resized-images.zip");
+        }
+
+        function resizeImage(file, options) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = options.width;
+                    canvas.height = options.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, options.width, options.height);
+                    canvas.toBlob(blob => resolve(blob), options.format, options.quality);
+                    URL.revokeObjectURL(img.src);
+                };
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+        }
+        
+        function triggerDownload(blob, fileName) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+        
+        function generateComparisonPageHTML(originalSrc, resizedSrc, fileName) {
+            return `
+                <!DOCTYPE html>
+                <html lang="ja">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>画像比較</title>
+                    <script src="https://cdn.tailwindcss.com"><\/script>
+                    <script>
+                        tailwind.config = {
+                            theme: {
+                                extend: {
+                                    colors: {
+                                        'dark-bg': '#202124',
+                                        'dark-card': '#303134',
+                                        'dark-text-primary': '#e8eaed',
+                                        'dark-text-secondary': '#9aa0a6',
+                                        'dark-text-muted': '#bdc1c6',
+                                        'dark-accent': '#8ab4f8',
+                                        'dark-accent-hover': '#a2c6f9',
+                                    }
+                                }
+                            }
+                        }
+                    <\/script>
+                    <style>
+                        body { font-family: 'Inter', sans-serif; }
+                    </style>
+                </head>
+                <body class="bg-dark-bg text-dark-text-primary flex flex-col items-center justify-center min-h-screen p-8">
+                    <div class="w-full max-w-6xl">
+                        <h1 class="text-center text-3xl font-bold mb-8">画像比較</h1>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="flex flex-col items-center">
+                                <h2 class="text-xl font-semibold text-dark-text-muted mb-4">元画像</h2>
+                                <div class="bg-dark-card p-4 rounded-lg">
+                                    <img src="${originalSrc}" alt="Original Image" class="max-w-full h-auto max-h-[60vh] object-contain">
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <h2 class="text-xl font-semibold text-dark-text-muted mb-4">リサイズ後</h2>
+                                <div class="bg-dark-card p-4 rounded-lg">
+                                    <img src="${resizedSrc}" alt="Resized Image" class="max-w-full h-auto max-h-[60vh] object-contain">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-12">
+                        <button id="download-btn" class="bg-dark-accent text-dark-bg font-bold py-3 px-8 rounded-lg hover:bg-dark-accent-hover transition-all">ダウンロード</button>
+                    </div>
+                    <script>
+                        document.getElementById('download-btn').addEventListener('click', async () => {
+                            const response = await fetch('${resizedSrc}');
+                            const blob = await response.blob();
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = '${fileName}';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                        });
+                    <\/script>
+                </body>
+                </html>
+            `;
         }
 
         // --- UI Helper Functions ---
+        function updateFileListUI() {
+            fileListContainer.classList.toggle('hidden', filesToProcess.length <= 1);
+            fileCount.textContent = filesToProcess.length;
+            fileList.innerHTML = '';
+            filesToProcess.forEach(f => {
+                const li = document.createElement('li');
+                li.textContent = f.file.name;
+                li.className = 'truncate';
+                fileList.appendChild(li);
+            });
+        }
+        
+        function updateOriginalInfo(file) {
+            const img = new Image();
+            img.onload = () => {
+                 originalInfo.innerHTML = `元のサイズ: ${img.width} x ${img.height} px<br>ファイルサイズ: ${formatBytes(file.size)}`;
+                 if(!widthInput.value) widthInput.value = img.width;
+                 if(!heightInput.value) heightInput.value = img.height;
+                 URL.revokeObjectURL(img.src);
+            };
+            img.src = URL.createObjectURL(file);
+        }
+        
+        function updateEstimate() {
+             if (filesToProcess.length === 0 || formatSelect.value === 'image/png') {
+                estimationSection.classList.add('hidden');
+                return;
+            }
+            estimationSection.classList.remove('hidden');
+            estimatedSize.textContent = '計算中...';
+            compressionPercentage.textContent = '...';
 
-        /**
-         * Sets the loading state for the process button.
-         * @param {boolean} isLoading True to show loading, false to hide.
-         */
-        function setLoading(isLoading) {
+            const originalFile = filesToProcess[0].file;
+
+            cropper.getCroppedCanvas().toBlob(blob => {
+                if (blob) {
+                    const estimatedFileSize = blob.size;
+                    const reduction = 1 - (estimatedFileSize / originalFile.size);
+                    const percentage = Math.max(0, Math.round(reduction * 100));
+                    estimatedSize.textContent = formatBytes(estimatedFileSize);
+                    compressionPercentage.textContent = `${percentage}%`;
+                }
+            }, formatSelect.value, parseInt(qualitySlider.value, 10) / 100);
+        }
+        
+        function setLoading(isLoading, text = null) {
             isProcessing = isLoading;
             processButton.disabled = isLoading;
             if (isLoading) {
-                buttonText.classList.add('hidden');
                 loadingSpinner.classList.remove('hidden');
+                if (text) {
+                    buttonText.textContent = text;
+                }
             } else {
-                buttonText.classList.remove('hidden');
                 loadingSpinner.classList.add('hidden');
+                if (filesToProcess.length > 1) {
+                    buttonText.textContent = "ZIPで一括ダウンロード";
+                } else {
+                    buttonText.textContent = "リサイズして別タブで開く";
+                }
             }
         }
         
-        /**
-         * Displays an error message.
-         * @param {string} message The error message to show.
-         */
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.classList.remove('hidden');
         }
 
-        /**
-         * Hides the error message.
-         */
         function hideError() {
             errorMessage.classList.add('hidden');
         }
-        /**
-         * Formats bytes into a human-readable string (KB, MB).
-         * @param {number} bytes The number of bytes.
-         * @returns {string} The formatted string.
-         */
+        
         function formatBytes(bytes, decimals = 2) {
-            if (bytes === 0) return '0 Bytes';
+            if (!+bytes) return '0 Bytes';
             const k = 1024;
             const dm = decimals < 0 ? 0 : decimals;
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
         }
+        
+        function createFileName(originalName, format) {
+            const name = originalName.split('.').slice(0, -1).join('.');
+            const ext = format.split('/')[1];
+            return `${name}-resized.${ext}`;
+        }
+
+        function setCopyright() {
+            const startYear = 2025;
+            const currentYear = new Date().getFullYear();
+            const yearString = currentYear > startYear ? `${startYear}-${currentYear}` : startYear;
+            copyrightElement.textContent = `© ${yearString} JILCH inc.`;
+        }
+        
+        // Initialize on load
+        setCopyright();
+    });
     </script>
 </body>
 </html>
