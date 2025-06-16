@@ -55,18 +55,13 @@
         #comparison-modal {
             transition: opacity 0.2s ease-in-out;
         }
-        /* Rainbow Glow animation */
-        @keyframes rainbow-glow {
-            0%   { border-color: #ff5e57; box-shadow: 0 0 10px #ff5e57; }
-            16%  { border-color: #ff9966; box-shadow: 0 0 12px #ff9966; }
-            33%  { border-color: #ffff66; box-shadow: 0 0 14px #ffff66; }
-            50%  { border-color: #66b3ff; box-shadow: 0 0 16px #66b3ff; }
-            66%  { border-color: #cc66ff; box-shadow: 0 0 18px #cc66ff; }
-            83%  { border-color: #ff5e57; box-shadow: 0 0 20px #ff5e57; }
-            100% { border-color: #81c995; box-shadow: 0 0 25px 5px #81c995; }
+        /* Green Glow animation for success */
+        @keyframes green-glow {
+            0%, 100% { box-shadow: 0 0 0px rgba(129, 201, 149, 0); border-color: transparent; }
+            50%      { box-shadow: 0 0 20px 5px rgba(129, 201, 149, 0.7); border-color: #81c995;}
         }
-        .animate-rainbow-glow {
-            animation: rainbow-glow 2.5s ease-in-out forwards;
+        .animate-green-glow {
+            animation: green-glow 1.5s ease-in-out;
         }
     </style>
 </head>
@@ -520,14 +515,14 @@
 
             comparisonModal.classList.remove('hidden');
             
-            modalResizedContainer.classList.add('animate-rainbow-glow');
+            modalResizedContainer.classList.add('animate-green-glow');
         }
 
         function hideModal() {
             if (modalResizedImage.src.startsWith('blob:')) {
                 URL.revokeObjectURL(modalResizedImage.src);
             }
-            modalResizedContainer.classList.remove('animate-rainbow-glow');
+            modalResizedContainer.classList.remove('animate-green-glow');
             comparisonModal.classList.add('hidden');
         }
 
