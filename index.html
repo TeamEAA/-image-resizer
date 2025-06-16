@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Compression and Resizing</title>
+    <title>OptiPixel</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom Tailwind Config -->
     <script>
         tailwind.config = {
+            darkMode: 'class', // Enable class-based dark mode
             theme: {
                 extend: {
                     colors: {
@@ -38,7 +39,8 @@
             font-family: 'Inter', sans-serif;
         }
         input[type="file"] { display: none; }
-        .drag-over { background-color: #3c4043; border-color: #8ab4f8; }
+        .drag-over { background-color: #e0f2fe; }
+        .dark .drag-over { background-color: #3c4043; border-color: #8ab4f8; }
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none; margin: 0;
@@ -46,10 +48,16 @@
         input[type=number] { -moz-appearance: textfield; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; appearance: none; width: 20px; height: 20px;
-            background: #8ab4f8; border-radius: 50%; cursor: pointer; margin-top: -6px;
+            background: #2563eb; border-radius: 50%; cursor: pointer; margin-top: -6px;
+        }
+        .dark input[type=range]::-webkit-slider-thumb {
+            background: #8ab4f8;
         }
         input[type=range]::-moz-range-thumb {
-            width: 20px; height: 20px; background: #8ab4f8; border-radius: 50%; cursor: pointer;
+            width: 20px; height: 20px; background: #2563eb; border-radius: 50%; cursor: pointer;
+        }
+        .dark input[type=range]::-moz-range-thumb {
+             background: #8ab4f8;
         }
         /* Modal transition */
         #comparison-modal {
@@ -65,54 +73,62 @@
         }
     </style>
 </head>
-<body class="bg-dark-bg text-dark-text-primary flex items-center justify-center min-h-screen p-4">
+<body class="bg-slate-100 dark:bg-dark-bg text-slate-800 dark:text-dark-text-primary flex items-center justify-center min-h-screen p-4 transition-colors duration-300">
 
-    <div class="w-full max-w-5xl mx-auto">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-dark-text-primary">Image Compression and Resizing</h1>
-            <p class="text-dark-text-secondary mt-2">すべての処理はブラウザ内で完結します。画像がサーバーにアップロードされることはありません。</p>
-            <p class="text-dark-text-secondary mt-1">複数ファイルのドラッグ＆ドロップで一括処理できます。</p>
+    <div class="w-full max-w-5xl mx-auto relative">
+        <!-- Theme Toggle -->
+        <div class="absolute top-0 right-0 p-2">
+            <div id="theme-toggle-container" class="flex items-center p-1 rounded-full bg-slate-200 dark:bg-dark-border">
+                <button id="theme-light-btn" class="p-1.5 rounded-full">
+                    <svg class="w-4 h-4 text-slate-800 dark:text-dark-text-muted" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 8.486a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                </button>
+                <button id="theme-dark-btn" class="p-1.5 rounded-full">
+                     <svg class="w-4 h-4 text-slate-800 dark:text-dark-text-muted" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <header class="text-center mb-8 pt-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-dark-text-primary">OptiPixel</h1>
+            <p class="text-slate-600 dark:text-dark-text-secondary mt-2">すべての処理はブラウザ内で完結します。画像がサーバーにアップロードされることはありません。</p>
+            <p class="text-slate-600 dark:text-dark-text-secondary mt-1">複数ファイルのドラッグ＆ドロップで一括処理できます。</p>
+            <p class="text-slate-600 dark:text-dark-text-secondary mt-1">✨ AIアシスタント機能で、代替テキスト・SNSキャプション・タグ生成・文字起こしも可能です。</p>
         </header>
 
-        <main class="bg-dark-card p-6 sm:p-8 rounded-2xl shadow-lg">
-            <!-- Upload Area -->
+        <main class="bg-white dark:bg-dark-card p-6 sm:p-8 rounded-2xl shadow-lg">
             <div id="upload-area">
-                <label for="file-input" id="drop-zone" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-dark-border rounded-xl cursor-pointer hover:bg-dark-hover transition-colors">
-                    <svg class="w-12 h-12 text-dark-text-secondary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <label for="file-input" id="drop-zone" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-300 dark:border-dark-border rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-dark-hover transition-colors">
+                    <svg class="w-12 h-12 text-slate-400 dark:text-dark-text-secondary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                     </svg>
-                    <p class="text-lg font-medium text-dark-text-muted">画像のリサイズとファイル圧縮</p>
-                    <p class="text-sm text-dark-text-secondary mt-1">クリックまたはドラッグ＆ドロップで開始</p>
+                    <p class="text-lg font-medium text-slate-700 dark:text-dark-text-muted">画像のリサイズとファイル圧縮</p>
+                    <p class="text-sm text-slate-500 dark:text-dark-text-secondary mt-1">クリックまたはドラッグ＆ドロップで開始</p>
                 </label>
                 <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
             </div>
 
-            <!-- Editor/Preview Area (Initially Hidden) -->
             <div id="editor-area" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Left: Preview & File List -->
                     <div class="flex flex-col">
-                        <div id="preview-container" class="flex flex-col items-center justify-center bg-dark-bg p-4 rounded-xl min-h-[350px]">
+                        <div id="preview-container" class="flex flex-col items-center justify-center bg-slate-100 dark:bg-dark-bg p-4 rounded-xl min-h-[350px]">
                             <img id="preview-image" src="#" alt="Image preview" class="max-w-full max-h-80 object-contain block rounded-lg">
                         </div>
                          <div id="file-list-container" class="mt-4 hidden">
-                            <h3 class="font-bold text-dark-text-muted mb-2">ファイル一覧 (<span id="file-count">0</span>)</h3>
-                            <ul id="file-list" class="text-sm text-dark-text-secondary max-h-24 overflow-y-auto bg-dark-bg p-3 rounded-lg"></ul>
+                            <h3 class="font-bold text-slate-700 dark:text-dark-text-muted mb-2">ファイル一覧 (<span id="file-count">0</span>)</h3>
+                            <ul id="file-list" class="text-sm text-slate-600 dark:text-dark-text-secondary max-h-24 overflow-y-auto bg-slate-100 dark:bg-dark-bg p-3 rounded-lg"></ul>
                         </div>
-                        <div id="original-info" class="text-center mt-4 text-sm text-dark-text-secondary"></div>
+                        <div id="original-info" class="text-center mt-4 text-sm text-slate-500 dark:text-dark-text-secondary"></div>
                     </div>
 
-                    <!-- Right: Settings -->
                     <div>
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-bold text-dark-text-primary">設定</h2>
-                            <button id="reset-button" class="text-sm bg-dark-border text-dark-text-primary py-1 px-3 rounded-lg hover:bg-[#7c8186] transition">リセット</button>
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-dark-text-primary">設定</h2>
+                            <button id="reset-button" class="text-sm bg-slate-200 dark:bg-dark-border text-slate-800 dark:text-dark-text-primary py-1 px-3 rounded-lg hover:bg-slate-300 dark:hover:bg-[#7c8186] transition">リセット</button>
                         </div>
                         
-                        <!-- Aspect Ratio -->
                         <div class="mb-4">
-                            <label for="aspect-ratio" class="block text-sm font-medium text-dark-text-muted mb-1">アスペクト比</label>
-                            <select id="aspect-ratio" class="w-full p-2 bg-dark-hover border border-dark-border text-dark-text-primary rounded-lg focus:ring-2 focus:ring-dark-accent focus:border-dark-accent transition">
+                            <label for="aspect-ratio" class="block text-sm font-medium text-slate-700 dark:text-dark-text-muted mb-1">アスペクト比</label>
+                            <select id="aspect-ratio" class="w-full p-2 bg-slate-50 dark:bg-dark-hover border border-slate-300 dark:border-dark-border text-slate-900 dark:text-dark-text-primary rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-dark-accent focus:border-blue-500 dark:focus:border-dark-accent transition">
                                 <option value="original">元の比率を維持</option>
                                 <option value="free">自由変形</option>
                                 <option value="1:1">1:1 (正方形)</option>
@@ -121,98 +137,109 @@
                             </select>
                         </div>
                         
-                        <!-- Dimensions -->
                         <div class="flex items-center gap-4 mb-4">
                             <div class="w-1/2">
-                                <label for="width-input" class="block text-sm font-medium text-dark-text-muted mb-1">幅 (px)</label>
-                                <input type="number" id="width-input" class="w-full p-2 bg-dark-hover border border-dark-border text-dark-text-primary rounded-lg" min="1">
+                                <label for="width-input" class="block text-sm font-medium text-slate-700 dark:text-dark-text-muted mb-1">幅 (px)</label>
+                                <input type="number" id="width-input" class="w-full p-2 bg-slate-50 dark:bg-dark-hover border border-slate-300 dark:border-dark-border text-slate-900 dark:text-dark-text-primary rounded-lg" min="1">
                             </div>
                             <div class="w-1/2">
-                                <label for="height-input" class="block text-sm font-medium text-dark-text-muted mb-1">高さ (px)</label>
-                                <input type="number" id="height-input" class="w-full p-2 bg-dark-hover border border-dark-border text-dark-text-primary rounded-lg" min="1">
+                                <label for="height-input" class="block text-sm font-medium text-slate-700 dark:text-dark-text-muted mb-1">高さ (px)</label>
+                                <input type="number" id="height-input" class="w-full p-2 bg-slate-50 dark:bg-dark-hover border border-slate-300 dark:border-dark-border text-slate-900 dark:text-dark-text-primary rounded-lg" min="1">
                             </div>
                         </div>
 
-                        <!-- Output Format -->
                         <div class="mb-4">
-                            <label for="format-select" class="block text-sm font-medium text-dark-text-muted mb-1">出力形式</label>
-                            <select id="format-select" class="w-full p-2 bg-dark-hover border border-dark-border text-dark-text-primary rounded-lg">
+                            <label for="format-select" class="block text-sm font-medium text-slate-700 dark:text-dark-text-muted mb-1">出力形式</label>
+                            <select id="format-select" class="w-full p-2 bg-slate-50 dark:bg-dark-hover border border-slate-300 dark:border-dark-border text-slate-900 dark:text-dark-text-primary rounded-lg">
                                 <option value="image/webp">WebP</option>
                                 <option value="image/jpeg">JPEG</option>
                                 <option value="image/png">PNG</option>
                             </select>
                         </div>
 
-                        <!-- Quality Slider -->
                         <div id="quality-section" class="mb-2">
                             <div class="flex justify-between items-center mb-1">
-                                <label for="quality-slider" class="block text-sm font-medium text-dark-text-muted">品質</label>
-                                <span id="quality-value" class="text-sm font-semibold text-dark-accent">80%</span>
+                                <label for="quality-slider" class="block text-sm font-medium text-slate-700 dark:text-dark-text-muted">品質</label>
+                                <span id="quality-value" class="text-sm font-semibold text-blue-600 dark:text-dark-accent">80%</span>
                             </div>
-                            <input type="range" id="quality-slider" min="1" max="100" value="80" class="w-full h-2 bg-slate-500 rounded-lg appearance-none cursor-pointer">
+                            <input type="range" id="quality-slider" min="1" max="100" value="80" class="w-full h-2 bg-slate-200 dark:bg-slate-500 rounded-lg appearance-none cursor-pointer">
                         </div>
 
-                        <!-- Estimated Size Section -->
-                        <div id="estimation-section" class="my-4 p-3 bg-dark-bg rounded-lg text-center hidden">
-                             <p class="text-sm text-dark-text-secondary">
+                        <div id="estimation-section" class="my-4 p-3 bg-slate-100 dark:bg-dark-bg rounded-lg text-center hidden">
+                             <p class="text-sm text-slate-600 dark:text-dark-text-secondary">
                                 予想ファイルサイズ: 
-                                <span id="estimated-size" class="font-bold text-dark-success">...</span> 
-                                (<span id="compression-percentage" class="font-bold text-dark-success">...</span> 削減)
+                                <span id="estimated-size" class="font-bold text-green-600 dark:text-dark-success">...</span> 
+                                (<span id="compression-percentage" class="font-bold text-green-600 dark:text-dark-success">...</span> 削減)
                             </p>
                         </div>
                         
-                        <!-- Action Button -->
-                        <button id="process-button" disabled class="w-full bg-dark-accent text-dark-bg font-bold py-3 px-4 rounded-lg hover:bg-dark-accent-hover transition-all disabled:bg-dark-button-disabled disabled:text-dark-button-text-disabled disabled:cursor-not-allowed flex items-center justify-center">
+                        <button id="process-button" disabled class="w-full bg-blue-600 dark:bg-dark-accent text-white dark:text-dark-bg font-bold py-3 px-4 rounded-lg hover:bg-blue-700 dark:hover:bg-dark-accent-hover transition-all disabled:bg-slate-400 dark:disabled:bg-dark-button-disabled disabled:text-slate-600 dark:disabled:text-dark-button-text-disabled disabled:cursor-not-allowed flex items-center justify-center">
                              <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                               </svg>
                             <span id="button-text">リサイズして比較</span>
                         </button>
+
+                        <div id="gemini-features" class="mt-6 pt-6 border-t border-slate-200 dark:border-dark-border hidden">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-dark-text-primary mb-3">✨ AI アシスタント</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button id="generate-alt-text-btn" class="text-sm bg-slate-200 dark:bg-dark-border text-slate-800 dark:text-dark-text-primary py-2 px-3 rounded-lg hover:bg-slate-300 dark:hover:bg-[#7c8186] transition disabled:opacity-50 disabled:cursor-not-allowed">代替テキストを生成</button>
+                                <button id="generate-caption-btn" class="text-sm bg-slate-200 dark:bg-dark-border text-slate-800 dark:text-dark-text-primary py-2 px-3 rounded-lg hover:bg-slate-300 dark:hover:bg-[#7c8186] transition disabled:opacity-50 disabled:cursor-not-allowed">SNSキャプションを生成</button>
+                                <button id="generate-tags-btn" class="text-sm bg-slate-200 dark:bg-dark-border text-slate-800 dark:text-dark-text-primary py-2 px-3 rounded-lg hover:bg-slate-300 dark:hover:bg-[#7c8186] transition disabled:opacity-50 disabled:cursor-not-allowed">タグ・キーワードを生成</button>
+                                <button id="generate-ocr-btn" class="text-sm bg-slate-200 dark:bg-dark-border text-slate-800 dark:text-dark-text-primary py-2 px-3 rounded-lg hover:bg-slate-300 dark:hover:bg-[#7c8186] transition disabled:opacity-50 disabled:cursor-not-allowed">文字起こし (OCR)</button>
+                            </div>
+                            <div id="gemini-output-container" class="mt-4 hidden relative">
+                                <textarea id="gemini-output" rows="4" class="w-full p-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-dark-border text-slate-800 dark:text-dark-text-primary rounded-lg" readonly></textarea>
+                                <button id="copy-gemini-output-btn" class="absolute top-2 right-2 p-1 text-slate-500 dark:text-dark-text-secondary hover:text-slate-800 dark:hover:text-dark-text-primary transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
-             <!-- Error Message -->
-            <div id="error-message" class="hidden mt-4 text-center text-red-400 bg-red-900/50 p-3 rounded-lg"></div>
+             <div id="error-message" class="hidden mt-4 text-center text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/50 p-3 rounded-lg"></div>
         </main>
 
         <footer class="text-center mt-8 py-4">
-            <p id="copyright-notice" class="text-sm text-dark-text-secondary"></p>
+            <p id="copyright-notice" class="text-sm text-slate-500 dark:text-dark-text-secondary"></p>
         </footer>
     </div>
 
-    <!-- Modal for image comparison -->
     <div id="comparison-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-dark-card w-full max-w-6xl rounded-2xl shadow-xl p-6 md:p-8 relative">
-            <button id="close-modal-button" class="absolute top-3 right-4 text-dark-text-secondary text-4xl font-light hover:text-dark-text-primary transition">&times;</button>
-            <h2 class="text-center text-2xl md:text-3xl font-bold mb-6 md:mb-8">画像比較</h2>
+        <div class="bg-white dark:bg-dark-card w-full max-w-6xl rounded-2xl shadow-xl p-6 md:p-8 relative">
+            <button id="close-modal-button" class="absolute top-3 right-4 text-slate-500 dark:text-dark-text-secondary text-4xl font-light hover:text-slate-800 dark:hover:text-dark-text-primary transition">&times;</button>
+            <h2 class="text-center text-2xl md:text-3xl font-bold text-slate-900 dark:text-dark-text-primary mb-6 md:mb-8">画像比較</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                 <div class="flex flex-col items-center">
-                    <h3 class="text-xl font-semibold text-dark-text-muted mb-4">元画像</h3>
-                    <div class="bg-dark-bg p-4 rounded-lg w-full h-full flex items-center justify-center">
+                    <h3 class="text-xl font-semibold text-slate-700 dark:text-dark-text-muted mb-4">元画像</h3>
+                    <div class="bg-slate-100 dark:bg-dark-bg p-4 rounded-lg w-full h-full flex items-center justify-center">
                         <img id="modal-original-image" src="#" class="max-w-full h-auto max-h-[50vh] object-contain">
                     </div>
-                    <div id="modal-original-info" class="mt-2 text-sm text-dark-text-secondary"></div>
+                    <div id="modal-original-info" class="mt-2 text-sm text-slate-600 dark:text-dark-text-secondary"></div>
                 </div>
                 <div class="flex flex-col items-center">
-                    <h3 class="text-xl font-semibold text-dark-text-muted mb-4">リサイズ後</h3>
-                    <div id="modal-resized-container" class="bg-dark-bg p-4 rounded-lg w-full h-full flex items-center justify-center border-2 border-transparent">
+                    <h3 class="text-xl font-semibold text-slate-700 dark:text-dark-text-muted mb-4">リサイズ後</h3>
+                    <div id="modal-resized-container" class="bg-slate-100 dark:bg-dark-bg p-4 rounded-lg w-full h-full flex items-center justify-center border-2 border-transparent">
                         <img id="modal-resized-image" src="#" class="max-w-full h-auto max-h-[50vh] object-contain">
                     </div>
-                    <div id="modal-resized-info" class="mt-2 text-sm text-dark-success font-semibold"></div>
+                    <div id="modal-resized-info" class="mt-2 text-sm text-green-600 dark:text-dark-success font-semibold"></div>
                 </div>
             </div>
             <div class="mt-8 text-center">
-                <button id="modal-download-btn" class="bg-dark-accent text-dark-bg font-bold py-3 px-8 rounded-lg hover:bg-dark-accent-hover transition-all">ダウンロード</button>
+                <button id="modal-download-btn" class="bg-blue-600 dark:bg-dark-accent text-white dark:text-dark-bg font-bold py-3 px-8 rounded-lg hover:bg-blue-700 dark:hover:bg-dark-accent-hover transition-all">ダウンロード</button>
             </div>
         </div>
     </div>
 
 
     <script>
-    // This wrapper ensures the script runs only after the entire HTML page is loaded.
     document.addEventListener('DOMContentLoaded', function() {
         // --- DOM Elements ---
+        const themeLightBtn = document.getElementById('theme-light-btn');
+        const themeDarkBtn = document.getElementById('theme-dark-btn');
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
         const uploadArea = document.getElementById('upload-area');
@@ -238,6 +265,16 @@
         const fileListContainer = document.getElementById('file-list-container');
         const fileList = document.getElementById('file-list');
         const fileCount = document.getElementById('file-count');
+        
+        // Gemini elements
+        const geminiFeatures = document.getElementById('gemini-features');
+        const generateAltTextBtn = document.getElementById('generate-alt-text-btn');
+        const generateCaptionBtn = document.getElementById('generate-caption-btn');
+        const generateTagsBtn = document.getElementById('generate-tags-btn');
+        const generateOcrBtn = document.getElementById('generate-ocr-btn');
+        const geminiOutputContainer = document.getElementById('gemini-output-container');
+        const geminiOutput = document.getElementById('gemini-output');
+        const copyGeminiOutputBtn = document.getElementById('copy-gemini-output-btn');
         
         // Modal elements
         const comparisonModal = document.getElementById('comparison-modal');
@@ -267,6 +304,28 @@
         };
 
         const debouncedUpdateEstimate = debounce(updateEstimate, 300);
+
+        // --- Theme Toggling ---
+        function applyTheme() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                themeDarkBtn.classList.add('bg-blue-600', 'dark:bg-dark-accent');
+                themeLightBtn.classList.remove('bg-white', 'dark:bg-dark-hover');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeLightBtn.classList.add('bg-white', 'dark:bg-dark-hover');
+                themeDarkBtn.classList.remove('bg-blue-600', 'dark:bg-dark-accent');
+            }
+        }
+        themeLightBtn.addEventListener('click', () => {
+            localStorage.theme = 'light';
+            applyTheme();
+        });
+        themeDarkBtn.addEventListener('click', () => {
+            localStorage.theme = 'dark';
+            applyTheme();
+        });
+
 
         // --- Event Listeners ---
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
@@ -307,6 +366,75 @@
             }
         });
 
+        // Gemini Listeners
+        generateAltTextBtn.addEventListener('click', () => callGemini('この画像の簡潔な代替テキストを日本語で生成してください。'));
+        generateCaptionBtn.addEventListener('click', () => callGemini('この画像について、創造的で魅力的なSNS用のキャプションを日本語で3つ提案してください。'));
+        generateTagsBtn.addEventListener('click', () => callGemini('この画像の内容を分析し、ブログやSNSで使える関連キーワードをカンマ区切りで10個提案してください。'));
+        generateOcrBtn.addEventListener('click', () => callGemini('この画像に含まれている文字をすべて正確に書き出してください。'));
+        copyGeminiOutputBtn.addEventListener('click', () => {
+            geminiOutput.select();
+            document.execCommand('copy');
+        });
+
+        // --- Gemini API Function ---
+        async function callGemini(prompt) {
+            if (!originalImageDataUrl) return;
+
+            const base64Data = originalImageDataUrl.split(',')[1];
+            setGeminiLoading(true);
+            geminiOutputContainer.classList.remove('hidden');
+            geminiOutput.value = 'AIが生成中です...';
+
+            try {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = {
+                  contents: [
+                        {
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inlineData: {
+                                        mimeType: "image/jpeg", // Assuming jpeg, works for most formats
+                                        data: base64Data
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                };
+                const apiKey = "" 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`APIリクエストに失敗しました: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    geminiOutput.value = text;
+                } else {
+                   throw new Error("予期しないAPIレスポンスです。");
+                }
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                geminiOutput.value = `エラーが発生しました: ${error.message}`;
+            } finally {
+                setGeminiLoading(false);
+            }
+        }
+
         // --- Core Functions ---
 
         function handleFiles(fileListInput) {
@@ -344,9 +472,16 @@
             uploadArea.classList.add('hidden');
             editorArea.classList.remove('hidden');
             processButton.disabled = false;
+            geminiFeatures.classList.remove('hidden');
             
             const isBatch = filesToProcess.length > 1;
             aspectRatioSelect.disabled = isBatch;
+            generateAltTextBtn.disabled = isBatch;
+            generateCaptionBtn.disabled = isBatch;
+            generateTagsBtn.disabled = isBatch;
+            generateOcrBtn.disabled = isBatch;
+
+
             if (isBatch) {
                 aspectRatioSelect.value = 'original';
                 buttonText.textContent = "ZIPで一括ダウンロード";
@@ -363,7 +498,10 @@
             
             editorArea.classList.add('hidden');
             uploadArea.classList.remove('hidden');
-            
+            geminiFeatures.classList.add('hidden');
+            geminiOutputContainer.classList.add('hidden');
+            geminiOutput.value = '';
+
             previewImage.src = "#";
             originalInfo.innerHTML = "";
             processButton.disabled = true;
@@ -593,6 +731,13 @@
                 }
             }
         }
+
+        function setGeminiLoading(isLoading) {
+            generateAltTextBtn.disabled = isLoading;
+            generateCaptionBtn.disabled = isLoading;
+            generateTagsBtn.disabled = isLoading;
+            generateOcrBtn.disabled = isLoading;
+        }
         
         function showError(message) {
             errorMessage.textContent = message;
@@ -625,7 +770,8 @@
             copyrightElement.textContent = `© ${yearString} JILCH inc.`;
         }
         
-        // Initialize on load
+        // Initialize on page load
+        applyTheme();
         setCopyright();
     });
     </script>
