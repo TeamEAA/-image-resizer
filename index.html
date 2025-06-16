@@ -186,6 +186,8 @@
     </div>
 
     <script>
+    // This wrapper ensures the script runs only after the entire HTML page is loaded.
+    // It's a best practice for stability, especially on platforms like GitHub Pages.
     document.addEventListener('DOMContentLoaded', function() {
         // --- DOM Elements ---
         const dropZone = document.getElementById('drop-zone');
