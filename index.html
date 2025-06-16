@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image compression and resizing tools</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style for the file input */
+        input[type="file"] {
+            display: none;
+        }
+        /* Custom styles for drag-over effect */
+        .drag-over {
+            background-color: #e0f2fe; /* Light blue background */
+            border-color: #0284c7; /* Sky blue border */
+        }
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Image Compression and Resizing Tools</h1>
+            <p class="text-slate-500 mt-2">すべての処理はブラウザ内で完結します。画像がサーバーにアップロードされることはありません。</p>
+        </header>
+
+        <main class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+            <!-- Upload Area -->
+            <div id="upload-area">
+                <label for="file-input" id="drop-zone" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                    <svg class="w-12 h-12 text-slate-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    <p class="text-lg font-medium text-slate-600">ここに画像をドラッグ＆ドロップ</p>
+                    <p class="text-slate-500">またはクリックしてファイルを選択</p>
+                </label>
+                <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif,image/webp">
+            </div>
+
+            <!-- Editor/Preview Area (Initially Hidden) -->
+            <div id="editor-area" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Left: Preview -->
+                    <div class="flex flex-col items-center justify-center bg-slate-50 p-4 rounded-xl">
+                        <img id="preview-image" src="#" alt="Image preview" class="max-w-full max-h-80 object-contain rounded-lg shadow-md">
+                        <div id="original-info" class="text-center mt-4 text-sm text-slate-500"></div>
+                    </div>
+
+                    <!-- Right: Settings -->
+                    <div>
+                        <h2 class="text-xl font-bold mb-4 text-slate-800">設定</h2>
+                        
+                        <!-- Aspect Ratio -->
+                        <div class="mb-4">
+                            <label for="aspect-ratio" class="block text-sm font-medium text-slate-600 mb-1">アスペクト比</label>
+                            <select id="aspect-ratio" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                                <option value="original">元の比率を維持</option>
+                                <option value="free">自由変形</option>
+                                <option value="1:1">1:1 (正方形)</option>
+                                <option value="4:3">4:3</option>
+                                <option value="16:9">16:9</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Dimensions -->
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-1/2">
+                                <label for="width-input" class="block text-sm font-medium text-slate-600 mb-1">幅 (px)</label>
+                                <input type="number" id="width-input" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" min="1">
+                            </div>
+                            <div class="w-1/2">
+                                <label for="height-input" class="block text-sm font-medium text-slate-600 mb-1">高さ (px)</label>
+                                <input type="number" id="height-input" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" min="1">
+                            </div>
+                        </div>
+
+                        <!-- Output Format -->
+                        <div class="mb-4">
+                            <label for="format-select" class="block text-sm font-medium text-slate-600 mb-1">出力形式</label>
+                            <select id="format-select" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                                <option value="image/webp">WebP</option>
+                                <option value="image/jpeg">JPEG</option>
+                                <option value="image/png">PNG</option>
+                            </select>
+                        </div>
+
+                        <!-- Quality Slider -->
+                        <div id="quality-section" class="mb-6">
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="quality-slider" class="block text-sm font-medium text-slate-600">品質</label>
+                                <span id="quality-value" class="text-sm font-semibold text-blue-600">80%</span>
+                            </div>
+                            <input type="range" id="quality-slider" min="1" max="100" value="80" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        
+                        <!-- Action Button -->
+                        <button id="process-button" disabled class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center">
+                             <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            <span id="button-text">リサイズ & 圧縮</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+             <!-- Error Message -->
+            <div id="error-message" class="hidden mt-4 text-center text-red-600 bg-red-100 p-3 rounded-lg"></div>
+        </main>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const uploadArea = document.getElementById('upload-area');
+        const editorArea = document.getElementById('editor-area');
+        const previewImage = document.getElementById('preview-image');
+        const originalInfo = document.getElementById('original-info');
+        const aspectRatioSelect = document.getElementById('aspect-ratio');
+        const widthInput = document.getElementById('width-input');
+        const heightInput = document.getElementById('height-input');
+        const formatSelect = document.getElementById('format-select');
+        const qualitySection = document.getElementById('quality-section');
+        const qualitySlider = document.getElementById('quality-slider');
+        const qualityValue = document.getElementById('quality-value');
+        const processButton = document.getElementById('process-button');
+        const errorMessage = document.getElementById('error-message');
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        // --- State variables ---
+        let originalImage = null; // Holds the Image object
+        let originalWidth = 0;
+        let originalHeight = 0;
+        let originalAspectRatio = 1;
+        let isProcessing = false;
+
+        // --- Event Listeners ---
+
+        // Drag and Drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                handleFile(files[0]);
+            }
+        });
+
+        // File Input Click
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        // Settings Listeners
+        widthInput.addEventListener('input', () => handleDimensionChange('width'));
+        heightInput.addEventListener('input', () => handleDimensionChange('height'));
+        aspectRatioSelect.addEventListener('change', updateDimensionsBasedOnAspectRatio);
+        formatSelect.addEventListener('change', () => {
+            const isPng = formatSelect.value === 'image/png';
+            qualitySection.style.display = isPng ? 'none' : 'block';
+        });
+        qualitySlider.addEventListener('input', (e) => {
+            qualityValue.textContent = `${e.target.value}%`;
+        });
+        processButton.addEventListener('click', processImage);
+
+        // --- Core Functions ---
+
+        /**
+         * Handles the selected file.
+         * @param {File} file The image file selected by the user.
+         */
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('画像ファイルを選択してください。');
+                return;
+            }
+            hideError();
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                originalImage = new Image();
+                originalImage.onload = () => {
+                    originalWidth = originalImage.width;
+                    originalHeight = originalImage.height;
+                    originalAspectRatio = originalWidth / originalHeight;
+
+                    // Populate UI
+                    previewImage.src = e.target.result;
+                    originalInfo.innerHTML = `元のサイズ: ${originalWidth} x ${originalHeight} px<br>ファイルサイズ: ${formatBytes(file.size)}`;
+                    widthInput.value = originalWidth;
+                    heightInput.value = originalHeight;
+
+                    // Show editor and hide upload area
+                    uploadArea.classList.add('hidden');
+                    editorArea.classList.remove('hidden');
+                    processButton.disabled = false;
+                };
+                originalImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /**
+         * Handles changes in width or height inputs based on aspect ratio.
+         * @param {('width'|'height')} changedInput The input that was changed.
+         */
+        function handleDimensionChange(changedInput) {
+            const ratio = aspectRatioSelect.value;
+            if (ratio === 'free') return; // Do nothing if freeform
+
+            let newWidth = parseInt(widthInput.value, 10);
+            let newHeight = parseInt(heightInput.value, 10);
+
+            if (ratio === 'original') {
+                if (changedInput === 'width') {
+                    if (newWidth > 0) heightInput.value = Math.round(newWidth / originalAspectRatio);
+                } else {
+                    if (newHeight > 0) widthInput.value = Math.round(newHeight * originalAspectRatio);
+                }
+            } else {
+                const [w, h] = ratio.split(':').map(Number);
+                const fixedAspectRatio = w / h;
+                 if (changedInput === 'width') {
+                    if (newWidth > 0) heightInput.value = Math.round(newWidth / fixedAspectRatio);
+                } else {
+                    if (newHeight > 0) widthInput.value = Math.round(newHeight * fixedAspectRatio);
+                }
+            }
+        }
+        
+        /**
+         * Updates dimensions when the aspect ratio select changes.
+         */
+        function updateDimensionsBasedOnAspectRatio() {
+            let width = parseInt(widthInput.value, 10);
+            if(width > 0) handleDimensionChange('width');
+        }
+
+        /**
+         * Main function to process the image: resize and compress.
+         */
+        function processImage() {
+            if (!originalImage || isProcessing) return;
+
+            setLoading(true);
+
+            const width = parseInt(widthInput.value, 10);
+            const height = parseInt(heightInput.value, 10);
+            const format = formatSelect.value;
+            const quality = parseInt(qualitySlider.value, 10) / 100;
+
+            if (!(width > 0 && height > 0)) {
+                showError('幅と高さを正しく入力してください。');
+                setLoading(false);
+                return;
+            }
+            hideError();
+
+            // Use a timeout to allow the UI to update to the loading state
+            setTimeout(() => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+
+                    // Draw image on canvas
+                    ctx.drawImage(originalImage, 0, 0, width, height);
+
+                    // Get blob from canvas
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            window.open(url, '_blank');
+                            // Clean up the URL object after a short delay
+                            setTimeout(() => URL.revokeObjectURL(url), 1000);
+                        } else {
+                            showError('画像の処理中にエラーが発生しました。');
+                        }
+                        setLoading(false);
+                    }, format, quality);
+
+                } catch (err) {
+                    console.error('Processing error:', err);
+                    showError('画像の処理中にエラーが発生しました。');
+                    setLoading(false);
+                }
+            }, 50); // 50ms delay
+        }
+
+        // --- UI Helper Functions ---
+
+        /**
+         * Sets the loading state for the process button.
+         * @param {boolean} isLoading True to show loading, false to hide.
+         */
+        function setLoading(isLoading) {
+            isProcessing = isLoading;
+            processButton.disabled = isLoading;
+            if (isLoading) {
+                buttonText.classList.add('hidden');
+                loadingSpinner.classList.remove('hidden');
+            } else {
+                buttonText.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+        
+        /**
+         * Displays an error message.
+         * @param {string} message The error message to show.
+         */
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the error message.
+         */
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+        /**
+         * Formats bytes into a human-readable string (KB, MB).
+         * @param {number} bytes The number of bytes.
+         * @returns {string} The formatted string.
+         */
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
